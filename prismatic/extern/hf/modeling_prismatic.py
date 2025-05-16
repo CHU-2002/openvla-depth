@@ -59,81 +59,10 @@ def ls_apply_patch(ls_module: LayerScale):
     ls_module.forward = _ls_new_forward.__get__(ls_module, LayerScale)
     del ls_module.gamma
 
-# class DepthFeatureExtractor(nn.Module):
-#     def __init__(
-#         self,
-#         model_name: str = "vit_base_patch16_224",
-#         pretrained: bool = True,
-#         use_intermediate_layer: bool = True,
-#         remove_cls_token: bool = True,
-#     ):
-#         super().__init__()
-#         self.model_name = model_name
-#         self.use_intermediate_layer = use_intermediate_layer
-#         self.remove_cls_token = remove_cls_token
-
-#         # Heuristically decide whether to use features_only
-#         self.is_transformer = any(key in model_name for key in ["vit", "deit", "beit"])
-#         features_only = not self.is_transformer
-
-#         self.depth_model = timm.create_model(
-#             model_name,
-#             pretrained=pretrained,
-#             in_chans=1,  # 单通道深度图
-#             num_classes=0,
-#             features_only=features_only,
-#         )
-
-#         # Patch ViT model to use get_intermediate_layers
-#         if self.is_transformer and self.use_intermediate_layer and hasattr(self.depth_model, "blocks"):
-#             num_blocks = len(self.depth_model.blocks)
-#             self.depth_model.forward = unpack_tuple(
-#                 partial(self.depth_model.get_intermediate_layers, n={num_blocks - 2})
-#             )
-
-#         # Save embed_dim
-#         self.embed_dim = self._get_embed_dim()
-
-#     def _get_embed_dim(self) -> int:
-#         if hasattr(self.depth_model, "embed_dim"):
-#             return self.depth_model.embed_dim
-#         elif hasattr(self.depth_model, "num_features"):
-#             return self.depth_model.num_features
-#         elif hasattr(self.depth_model, "feature_info"):
-#             return self.depth_model.feature_info[-1]["num_chs"]
-#         else:
-#             raise ValueError("Could not determine embed_dim for model.")
-
-#     def forward(self, x: torch.Tensor) -> torch.Tensor:
-#         """
-#         输入:
-#             x: [B, 1, H, W] 单通道深度图
-#         输出:
-#             patch_embeddings: [B, N, embed_dim] 适用于 cross-attention
-#         """
-#         if x.shape[1] != 1:
-#             raise ValueError(f"Expected 1-channel depth image, but got shape {x.shape}")
-
-#         output = self.depth_model(x)
-
-#         # === Transformer 类型 → patch embeddings: [B, N, C]
-#         if isinstance(output, torch.Tensor) and output.ndim == 3:
-#             if self.remove_cls_token:
-#                 return output[:, 1:]  # 移除 CLS token
-#             return output  # [B, N, C]
-
-#         # === CNN / Swin 类型 → 特征图: [B, C, H, W]
-#         elif isinstance(output, torch.Tensor) and output.ndim == 4:
-#             return output.flatten(2).transpose(1, 2)  # [B, C, H, W] → [B, N, C]
-
-#         else:
-#             raise ValueError(f"Unexpected output shape from model: {output.shape}")
-
-
 class DepthFeatureExtractor(nn.Module):
     def __init__(
         self,
-        model_name: str = "vit_huge_patch14_224",
+        model_name: str = "vit_base_patch16_224",
         pretrained: bool = True,
         use_intermediate_layer: bool = True,
         remove_cls_token: bool = True,
@@ -150,6 +79,7 @@ class DepthFeatureExtractor(nn.Module):
         self.depth_model = timm.create_model(
             model_name,
             pretrained=pretrained,
+            in_chans=1,  # 单通道深度图
             num_classes=0,
             features_only=features_only,
         )
@@ -177,12 +107,12 @@ class DepthFeatureExtractor(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         输入:
-            x: [B, 3, H, W] 3通道深度图（通常是将单通道深度图复制为三通道）
+            x: [B, 1, H, W] 单通道深度图
         输出:
-            patch_embeddings: [B, N, embed_dim] 适用于 cross-attention 的补丁嵌入表示
+            patch_embeddings: [B, N, embed_dim] 适用于 cross-attention
         """
-        if x.shape[1] != 3:
-            raise ValueError(f"Expected 3-channel depth image, but got shape {x.shape}")
+        if x.shape[1] != 1:
+            raise ValueError(f"Expected 1-channel depth image, but got shape {x.shape}")
 
         output = self.depth_model(x)
 
@@ -191,11 +121,81 @@ class DepthFeatureExtractor(nn.Module):
             if self.remove_cls_token:
                 return output[:, 1:]  # 移除 CLS token
             return output  # [B, N, C]
+
         # === CNN / Swin 类型 → 特征图: [B, C, H, W]
         elif isinstance(output, torch.Tensor) and output.ndim == 4:
             return output.flatten(2).transpose(1, 2)  # [B, C, H, W] → [B, N, C]
+
         else:
             raise ValueError(f"Unexpected output shape from model: {output.shape}")
+
+
+# class DepthFeatureExtractor(nn.Module):
+#     def __init__(
+#         self,
+#         model_name: str = "vit_huge_patch14_224",
+#         pretrained: bool = True,
+#         use_intermediate_layer: bool = True,
+#         remove_cls_token: bool = True,
+#     ):
+#         super().__init__()
+#         self.model_name = model_name
+#         self.use_intermediate_layer = use_intermediate_layer
+#         self.remove_cls_token = remove_cls_token
+
+#         # Heuristically decide whether to use features_only
+#         self.is_transformer = any(key in model_name for key in ["vit", "deit", "beit"])
+#         features_only = not self.is_transformer
+
+#         self.depth_model = timm.create_model(
+#             model_name,
+#             pretrained=pretrained,
+#             num_classes=0,
+#             features_only=features_only,
+#         )
+
+#         # Patch ViT model to use get_intermediate_layers
+#         if self.is_transformer and self.use_intermediate_layer and hasattr(self.depth_model, "blocks"):
+#             num_blocks = len(self.depth_model.blocks)
+#             self.depth_model.forward = unpack_tuple(
+#                 partial(self.depth_model.get_intermediate_layers, n={num_blocks - 2})
+#             )
+
+#         # Save embed_dim
+#         self.embed_dim = self._get_embed_dim()
+
+#     def _get_embed_dim(self) -> int:
+#         if hasattr(self.depth_model, "embed_dim"):
+#             return self.depth_model.embed_dim
+#         elif hasattr(self.depth_model, "num_features"):
+#             return self.depth_model.num_features
+#         elif hasattr(self.depth_model, "feature_info"):
+#             return self.depth_model.feature_info[-1]["num_chs"]
+#         else:
+#             raise ValueError("Could not determine embed_dim for model.")
+
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         """
+#         输入:
+#             x: [B, 3, H, W] 3通道深度图（通常是将单通道深度图复制为三通道）
+#         输出:
+#             patch_embeddings: [B, N, embed_dim] 适用于 cross-attention 的补丁嵌入表示
+#         """
+#         if x.shape[1] != 3:
+#             raise ValueError(f"Expected 3-channel depth image, but got shape {x.shape}")
+
+#         output = self.depth_model(x)
+
+#         # === Transformer 类型 → patch embeddings: [B, N, C]
+#         if isinstance(output, torch.Tensor) and output.ndim == 3:
+#             if self.remove_cls_token:
+#                 return output[:, 1:]  # 移除 CLS token
+#             return output  # [B, N, C]
+#         # === CNN / Swin 类型 → 特征图: [B, C, H, W]
+#         elif isinstance(output, torch.Tensor) and output.ndim == 4:
+#             return output.flatten(2).transpose(1, 2)  # [B, C, H, W] → [B, N, C]
+#         else:
+#             raise ValueError(f"Unexpected output shape from model: {output.shape}")
         
 # === Prismatic Vision Backbone (nn.Module) Definitions (w/ Fused Backbone Support) ===
 class PrismaticVisionBackbone(nn.Module):
