@@ -76,7 +76,7 @@ vla-scripts/finetune.py \
 --wandb_entity your_wandb_team \
 --save_steps 25000 \
 --max_steps 25000
-
+```
 Example for RTX 4090:
 
 ```bash
@@ -95,7 +95,7 @@ vla-scripts/finetune.py \
 --wandb_entity your_wandb_team \
 --save_steps 12000 \
 --max_steps 12000
-
+```
 Adjust the parameters accordingly to your hardware setup and training plan.
 
 ### 4. Update Inference Configuration
