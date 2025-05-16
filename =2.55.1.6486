@@ -1,0 +1,5 @@
+Collecting pyrealsense2
+  Using cached pyrealsense2-2.55.1.6486-cp310-cp310-manylinux1_x86_64.whl.metadata (1.8 kB)
+Using cached pyrealsense2-2.55.1.6486-cp310-cp310-manylinux1_x86_64.whl (3.5 MB)
+Installing collected packages: pyrealsense2
+Successfully installed pyrealsense2-2.55.1.6486

@@ -1,0 +1,12 @@
+timm==0.9.10
+tokenizers==0.19.1
+torch>=2.2.0
+torchvision>=0.16.0
+transformers==4.40.1
+
+# ur5 controller lib
+pyrealsense2>=2.55.1.6486
+opencv-python
+ur_rtde>=1.5.9
+numpy==1.24.3
+pyspacemouse
