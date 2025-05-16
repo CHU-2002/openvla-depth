@@ -39,7 +39,7 @@ Fine-tuning follows the **same procedure as OpenVLA**, with necessary extensions
 
 These modifications enable the model to accept and integrate depth images alongside RGB inputs during training and inference.
 
-## 🔧 Fine-tuning Workflow
+## Fine-tuning Workflow
 
 Follow these steps to fine-tune the model with your own data:
 
@@ -105,6 +105,29 @@ Modify `openvla_exp.py` to set the model checkpoint path and dataset statistics 
 ### 5. Run Inference
 
 Use the `test_reasoning.py` script to validate the fine-tuned model's reasoning and control performance.
+
+## Model Architecture Notes and Customization
+
+* The default depth vision backbone is `vit_base_patch16_224`. You can change this in `prismatic/extern/hf/modeling_prismatic.py`.
+* The same file includes commented sections referencing other fusion methods from the paper. You may uncomment and modify as needed.
+* `prismatic/extern/hf/modeling_prismatic_early.py` contains the implementation for **early fusion** of RGB and depth.
+* `prismatic/extern/hf/processing_prismatic.py` includes two depth normalization strategies:
+
+  * Default: **HHA encoding**
+  * Alternative options can be manually selected by modifying the code.
+
+### 🛠 finetune.py and Dataset Integration Notes
+
+* `finetune.py` and data loading logic have been modified to incorporate **depth** and **proprioception** modalities.
+* Model loading has also been adapted for custom architecture and feature inputs.
+* **It is recommended to use a locally saved copy of `openvla-7b`**, rather than downloading from Hugging Face, when running fine-tuning.
+
+### ❌ Checkpoint Limitations and Validation
+
+* Due to changes in model saving and merging logic, **intermediate checkpoints are not supported**.
+* A validation function is included to evaluate during training.
+* After training completes, the script supports **direct inference testing** to confirm the fine-tuning effectiveness.
+
 
 ## Resources
 
