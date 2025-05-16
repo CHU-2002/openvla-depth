@@ -18,7 +18,7 @@ This repository follows the **same usage conventions as the original [OpenVLA](h
 
 ### Training Dataset
 
-- [ur5_robo_dataset2](https://huggingface.co/datasets/CHU-2002/ur5_robo_dataset2)  
+- [ur5_robo_dataset2](https://huggingface.co/datasets/CHU-2002/ur5_robo_dataset)  
   This dataset contains multi-modal sequences suitable for UR5 robotic manipulation with RGB-D input.
 
 ### Inference and Utility Scripts
