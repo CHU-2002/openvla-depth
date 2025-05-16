@@ -39,6 +39,73 @@ Fine-tuning follows the **same procedure as OpenVLA**, with necessary extensions
 
 These modifications enable the model to accept and integrate depth images alongside RGB inputs during training and inference.
 
+## 🔧 Fine-tuning Workflow
+
+Follow these steps to fine-tune the model with your own data:
+
+### 1. Prepare Dataset
+
+You can either:
+
+- Follow the instructions from [UR5 Dataset Builder](https://github.com/CHU-2002/UR5_dataset_builder) to build a suitable dataset, **or**
+- Directly download the preprocessed dataset from Hugging Face: [ur5_robo_dataset](https://huggingface.co/datasets/CHU-2002/ur5_robo_dataset/)
+
+### 2. Register Dataset
+
+Ensure the dataset is registered inside the following files (this is already done for `ur5_robo_dataset`):
+
+- `/prismatic/vla/dataset/rlds/oxe/config.py`
+- `/prismatic/vla/dataset/rlds/oxe/transforms.py`
+
+### 3. Launch Fine-tuning
+
+Use `vla-scripts/finetune.py` for training. Example command for A100:
+
+```bash
+PYTHONPATH=$(pwd) torchrun --standalone --nnodes 1 --nproc-per-node 1 \
+vla-scripts/finetune.py \
+--data_root_dir  /path/to/dataset \
+--run_root_dir /path/to/output_dir \
+--adapter_tmp_dir /path/to/tmp_dir \
+--lora_rank 32 \
+--batch_size 8 \
+--grad_accumulation_steps 1 \
+--learning_rate 1e-4 \
+--image_aug True \
+--wandb_project your_project_name \
+--wandb_entity your_wandb_team \
+--save_steps 25000 \
+--max_steps 25000
+
+Example for RTX 4090:
+
+```bash
+PYTHONPATH=$(pwd) torchrun --standalone --nnodes 1 --nproc-per-node 1 \
+vla-scripts/finetune.py \
+--data_root_dir  /path/to/dataset \
+--dataset_name ur5_robo_dataset \
+--run_root_dir /path/to/output_dir \
+--adapter_tmp_dir  /path/to/tmp_dir \
+--lora_rank 32 \
+--batch_size 1 \
+--grad_accumulation_steps 16 \
+--learning_rate 1e-4 \
+--image_aug True \
+--wandb_project your_project_name \
+--wandb_entity your_wandb_team \
+--save_steps 12000 \
+--max_steps 12000
+
+Adjust the parameters accordingly to your hardware setup and training plan.
+
+### 4. Update Inference Configuration
+
+Modify `openvla_exp.py` to set the model checkpoint path and dataset statistics (mean/std) for evaluation or robotic control.
+
+### 5. Run Inference
+
+Use the `test_reasoning.py` script to validate the fine-tuned model's reasoning and control performance.
+
 ## Resources
 
 - [OpenVLA GitHub](https://github.com/openvla/openvla)
