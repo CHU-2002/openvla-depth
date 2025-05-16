@@ -116,13 +116,13 @@ Use the `test_reasoning.py` script to validate the fine-tuned model's reasoning 
   * Default: **HHA encoding**
   * Alternative options can be manually selected by modifying the code.
 
-### 🛠 finetune.py and Dataset Integration Notes
+### finetune.py and Dataset Integration Notes
 
 * `finetune.py` and data loading logic have been modified to incorporate **depth** and **proprioception** modalities.
 * Model loading has also been adapted for custom architecture and feature inputs.
 * **It is recommended to use a locally saved copy of `openvla-7b`**, rather than downloading from Hugging Face, when running fine-tuning.
 
-### ❌ Checkpoint Limitations and Validation
+### Checkpoint Limitations and Validation
 
 * Due to changes in model saving and merging logic, **intermediate checkpoints are not supported**.
 * A validation function is included to evaluate during training.
