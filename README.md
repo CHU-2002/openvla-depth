@@ -65,6 +65,7 @@ Use `vla-scripts/finetune.py` for training. Example command for A100:
 PYTHONPATH=$(pwd) torchrun --standalone --nnodes 1 --nproc-per-node 1 \
 vla-scripts/finetune.py \
 --data_root_dir  /path/to/dataset \
+--dataset_name dataset_name \
 --run_root_dir /path/to/output_dir \
 --adapter_tmp_dir /path/to/tmp_dir \
 --lora_rank 32 \
@@ -83,7 +84,7 @@ Example for RTX 4090:
 PYTHONPATH=$(pwd) torchrun --standalone --nnodes 1 --nproc-per-node 1 \
 vla-scripts/finetune.py \
 --data_root_dir  /path/to/dataset \
---dataset_name ur5_robo_dataset \
+--dataset_name dataset_name \
 --run_root_dir /path/to/output_dir \
 --adapter_tmp_dir  /path/to/tmp_dir \
 --lora_rank 32 \
@@ -98,9 +99,10 @@ vla-scripts/finetune.py \
 ```
 Adjust the parameters accordingly to your hardware setup and training plan.
 
-### 4. Update Inference Configuration
+### 4. Update Inference Configuration and Execute on the UR5 Robot
 
 Modify `openvla_exp.py` to set the model checkpoint path and dataset statistics (mean/std) for evaluation or robotic control.
+Execute `openvla_exp.py` to deploy the model on the robot.
 
 ### 5. Run Inference
 
